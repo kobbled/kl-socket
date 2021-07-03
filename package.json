@@ -1,0 +1,21 @@
+{
+  "manver" : "1",
+  "project" : "socket",
+  "description" : "",
+  "version" : "0.0.1",
+  "license" : "MIT",
+  "author" : "",
+  "source" : [
+    "src/socket.kl"
+  ],
+  "includes" : [
+    "include"
+  ],
+  "depends" : [
+    "ktransw-macros",
+    "display",
+    "errors"
+  ],
+  "external_paths" : [
+  ]
+}

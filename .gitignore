@@ -1,0 +1,4 @@
+*.swp
+robot.ini
+bin/
+build/

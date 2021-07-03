@@ -1,0 +1,28 @@
+%ifndef socket_private_h
+%define socket_private_h
+
+%include namespace.m
+
+%define prog_name socket
+%define prog_name_alias sckt
+
+declare_function(prog_name,set_port_,prog_name_alias,setPort)
+ROUTINE socket__set_port_(this : T_SOCKET) FROM socket
+declare_function(prog_name,disconnect_,prog_name_alias,disco)
+ROUTINE socket__disconnect_(this : T_SOCKET; fl : FILE) FROM socket
+declare_function(prog_name,connect_,prog_name_alias,conn)
+ROUTINE socket__connect_(this : T_SOCKET; fl : FILE) FROM socket
+
+--server
+declare_function(prog_name,set_server_tag_,prog_name_alias,stSrvt)
+ROUTINE socket__set_server_tag_(number : INTEGER) : STRING FROM socket
+declare_function(prog_name,set_server_var_,prog_name_alias,stSrvv)
+ROUTINE socket__set_server_var_(number : INTEGER) : STRING FROM socket
+
+--client
+declare_function(prog_name,set_client_tag_,prog_name_alias,stClntt)
+ROUTINE socket__set_client_tag_(number : INTEGER) : STRING FROM socket
+declare_function(prog_name,set_client_var_,prog_name_alias,stClntv)
+ROUTINE socket__set_client_var_(number : INTEGER) : STRING FROM socket
+
+%endif --socket_private_h
