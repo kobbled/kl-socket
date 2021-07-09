@@ -25,4 +25,12 @@ ROUTINE socket__new_client(this : T_SOCKET; client_no : INTEGER; port : INTEGER;
 declare_function(prog_name,delete_client,prog_name_alias,delClnt)
 ROUTINE socket__delete_client(this : T_SOCKET) FROM socket
 
+--read routines
+declare_function(prog_name,read_into_string_buffer,prog_name_alias,rd2strb)
+ROUTINE socket__read_into_string_buffer(this : T_SOCKET; fl : FILE; buffer : ARRAY OF STRING; i : INTEGER) FROM socket
+declare_function(prog_name,write_into_string_buffer,prog_name_alias,wt2strb)
+ROUTINE socket__write_into_string_buffer(this : T_SOCKET; fl : FILE; progname : STRING; varname :STRING; buffer : ARRAY OF STRING) FROM socket
+
+--write routines
+
 %endif --socket_h

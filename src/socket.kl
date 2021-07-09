@@ -240,5 +240,82 @@ ROUTINE socket__delete_client
     delete_util_(this)
   END socket__delete_client
 
+
+-- read routines
+
+-- initialize recursive function setting i=1
+ROUTINE socket__read_into_string_buffer
+  VAR
+    n_bytes : INTEGER
+    status : INTEGER
+  BEGIN
+    --read how many bytes are in the file buffer
+    BYTES_AHEAD(fl, n_bytes, status)
+    --if error on byte read warn user
+    IF status <> 0 THEN
+      karelError(status, 'Socket comm error', ER_WARN)
+    ENDIF
+    --handle uninit bytes
+    IF UNINIT(n_bytes) THEN n_bytes = 0; ENDIF
+
+    --exit recursion if no bytes are read
+    IF n_bytes <= 0 THEN
+      this.status = IO_STATUS(fl)
+      CLR_IO_STAT(fl)
+      --no more data to read
+      RETURN
+    ENDIF
+
+    --recursively call function in case read bytes is larger than buffer strings
+    --to store in next index of the buffer
+    IF i > ARRAY_LEN(buffer) THEN
+      karelError(VAR_TOO_BIG, 'Buffer array is not large enough.', ER_ABORT)
+    ENDIF
+
+    IF (n_bytes > 0) AND (status = 0) THEN
+      DELAY 100
+      usrdis__print(DEBUG, 'read ' + CHR(n_bytes + ORD('0', 1)) + & 
+                           ' bytes. Into buff ' + CHR(i + ORD('0', 1)) )
+      READ fl(buffer[i]::n_bytes)
+      
+      IF NOT UNINIT(buffer[i]) THEN
+        usrdis__print(DEBUG, 'recieved str: ' + buffer[i])
+      ENDIF
+
+      socket__read_into_string_buffer(this, fl, buffer, i)
+
+    ENDIF
+
+  END socket__read_into_string_buffer
+
+--write routines
+
+ROUTINE socket__write_into_string_buffer
+  VAR
+    i, status : INTEGER
+  BEGIN
+    i = 1
+    IF UNINIT(buffer[i]) THEN
+      RETURN
+    ENDIF
+
+    REPEAT
+      usrdis__print(DEBUG, 'send str: ' + buffer[i])
+      --write buffer back to comm
+      WRITE fl(buffer[i]::STR_LEN(buffer[i]))
+      DELAY 100
+      i = i + 1
+    UNTIL(UNINIT(buffer[i]))
+    --send termination bit
+    WRITE fl(CR)
+
+    this.status = IO_STATUS(fl)
+    CLR_IO_STAT(fl)
+
+    --clear buffer
+    SET_UNI_ARRS(progname, varname, 1, (i-1))
+
+  END socket__write_into_string_buffer
+
 BEGIN
 END socket
