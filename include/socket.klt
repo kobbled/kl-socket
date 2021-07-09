@@ -7,6 +7,9 @@ CONST
 	TAG_DEFINED  =  2 -- a 'defined' TAG
 	TAG_STARTED  =  3 -- a 'started' TAG
 
+  TAG_CLIENT = 1
+  TAG_SERVER = 2
+
 TYPE
 
   T_SOCKET FROM socket = STRUCTURE
@@ -14,9 +17,9 @@ TYPE
     status     :  INTEGER
     port       :  INTEGER
     ip         :  STRING[13]
-    number  :  INTEGER
-    tag  :  STRING[3]
-    env  :  STRING[13]
+    number     :  INTEGER
+    tag        :  STRING[3]
+    env        :  STRING[13]
   ENDSTRUCTURE
 
 %endif --socket_t

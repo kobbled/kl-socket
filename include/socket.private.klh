@@ -8,6 +8,8 @@
 
 declare_function(prog_name,set_port_,prog_name_alias,setPort)
 ROUTINE socket__set_port_(this : T_SOCKET) FROM socket
+declare_function(prog_name,set_ip_,prog_name_alias,setip)
+ROUTINE socket__set_ip_(this : T_SOCKET) FROM socket
 declare_function(prog_name,disconnect_,prog_name_alias,disco)
 ROUTINE socket__disconnect_(this : T_SOCKET; fl : FILE) FROM socket
 declare_function(prog_name,connect_,prog_name_alias,conn)

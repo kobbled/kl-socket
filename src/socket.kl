@@ -5,6 +5,7 @@ PROGRAM socket
 %NOPAUSE = COMMAND + TPENABLE + ERROR
 
 %include errors.klt
+%include files.klt
 %include display.c.klt
 %include socket.klt
 
@@ -25,11 +26,28 @@ ROUTINE socket__set_port_
   VAR
     entry : INTEGER
   BEGIN
-    SET_VAR(entry,'*SYSTEM*', this.env + '.$SERVER_PORT', this.port, this.status)
+    SET_VAR(entry,'*SYSTEM*', this.env + '.$SERVER_PORT', (this.port), this.status)
     IF this.status <> 0 THEN
       karelError(this.status, 'could not set port for ' + this.tag, ER_ABORT)
     ENDIF
   END socket__set_port_
+
+ROUTINE socket__set_ip_
+  VAR
+    entry : INTEGER
+    ustr : ARRAY[1] OF STRING[13]
+  BEGIN
+    IF this.ip = '' THEN
+      SET_VAR(entry,'*SYSTEM*', this.env + '.$REMOTE', ustr[1], this.status)
+    ELSE
+      SET_VAR(entry,'*SYSTEM*', this.env + '.$REMOTE', this.ip, this.status)
+    ENDIF
+
+    IF this.status = VAR_UNINIT THEN this.status = 0 ; ENDIF -- do not error on uninitalized data
+    IF this.status <> 0 THEN
+      karelError(this.status, 'could not set ip for ' + this.tag, ER_ABORT)
+    ENDIF
+  END socket__set_ip_
 
 ROUTINE socket__disconnect_
   BEGIN
@@ -47,21 +65,25 @@ ROUTINE socket__disconnect_
       ENDIF
 
     --close server file
-    CLOSE FILE fl 
-    SET_FILE_ATR(fl, ATR_UF)-- for binary file
+    CLOSE FILE fl
 
   END socket__disconnect_
 
 ROUTINE socket__connect_
   VAR
-    dummy : STRING[3]
+    dummystr : STRING[3]
   BEGIN
     usrdis__print(INFO, this.tag + ' CONNECTING.....')
 
+    --connect to tag
     MSG_CONNECT(this.tag, this.status)
-    dummy = this.tag
-    OPEN FILE fl ('RW', dummy)
+    --set socket stream
+    SET_FILE_ATR(fl, ATR_UF)-- for binary file
+    dummystr = this.tag
+    CLR_IO_STAT(fl)
+    OPEN FILE fl ('RW', dummystr)
     this.status = IO_STATUS(fl)
+    --check status
     IF this.status = 0 THEN
       this.connected = TRUE
       usrdis__print(INFO, this.tag + ' CONNECTED')
@@ -98,6 +120,41 @@ ROUTINE socket__set_client_var_
 
 --
 
+ROUTINE new_util_(this : T_SOCKET; typ : INTEGER; no : INTEGER;  port : INTEGER; ip_address : STRING)
+  BEGIN
+    IF (no < 1) AND (no >= 8) THEN
+      karelError(INVALID_INDEX, CHR(no + ORD('0', 1)) + ' is an invalid client.' , ER_ABORT)
+    ENDIF
+
+    this.connected = FALSE
+    this.status = 0
+    this.port = port
+    this.ip = ip_address
+
+    this.number = no
+    SELECT typ OF
+      CASE(TAG_CLIENT):
+        this.tag = socket__set_client_tag_((this.number))
+        this.env = socket__set_client_var_((this.number))
+      CASE(TAG_SERVER):
+        this.tag = socket__set_server_tag_((this.number))
+        this.env = socket__set_server_var_((this.number))
+      ELSE:
+        karelError(INVALID_INDEX, 'client/server type not set correctly' , ER_ABORT)
+    ENDSELECT
+
+    --initialize log
+    --(log_filename, show_date, show_debug, show_info)
+%ifeq USE_LOG TRUE
+    usrdis__constructor(LOG_NAME, TRUE, FALSE, TRUE)
+%else
+    --print to display
+    usrdis__constructor('', TRUE, FALSE, TRUE)
+%endif
+
+    usrdis__print(INFO, this.tag + ' Started...')
+  END new_util_
+
 ROUTINE delete_util_(this : T_SOCKET)
   BEGIN
     this.connected = FALSE
@@ -132,6 +189,8 @@ ROUTINE socket__start
   BEGIN
     --set port
     socket__set_port_(this)
+    --set ip
+    socket__set_ip_(this)
     --check that server is STARTED
     socket__check_tag(this)
 
@@ -141,35 +200,23 @@ ROUTINE socket__start
       --connect
       socket__connect_(this, fl)
 
-      DELAY 1000
+      DELAY 500
     UNTIL(this.status=0)
 
   END socket__start
 
+ROUTINE socket__stop
+  BEGIN
+    REPEAT
+      socket__disconnect_(this, fl)
+      DELAY 500
+    UNTIL(this.status=0)
+  END socket__stop
+
 --server routines
 ROUTINE socket__new_server
   BEGIN
-    IF (server_no < 1) AND (server_no >= 8) THEN
-      karelError(INVALID_INDEX, CHR(server_no + ORD('0', 1)) + ' is an invalid server.' , ER_ABORT)
-    ENDIF
-
-    this.connected = FALSE
-    this.status = 0
-    this.port = port
-
-    this.number = server_no
-    this.tag = socket__set_server_tag_(this.number)
-    this.env = socket__set_server_var_(this.number)
-    --initialize log
-    --(log_filename, show_date, show_debug, show_info)
-%ifeq USE_LOG TRUE
-    usrdis__constructor(LOG_NAME, TRUE, FALSE, TRUE)
-%else
-    --print to display
-    usrdis__constructor('', TRUE, FALSE, TRUE)
-%endif
-
-    usrdis__print(INFO, this.tag + ' Started...')
+    new_util_(this, TAG_SERVER, server_no, port, ip_address)
   END socket__new_server
 
 ROUTINE socket__delete_server
@@ -182,28 +229,7 @@ ROUTINE socket__delete_server
 --client routines
 ROUTINE socket__new_client
   BEGIN
-    IF (client_no < 1) AND (client_no >= 8) THEN
-      karelError(INVALID_INDEX, CHR(client_no + ORD('0', 1)) + ' is an invalid client.' , ER_ABORT)
-    ENDIF
-
-    this.connected = FALSE
-    this.status = 0
-    this.port = port
-    this.ip = ip
-
-    this.number = client_no
-    this.tag = socket__set_client_tag_(this.number)
-    this.env = socket__set_client_var_(this.number)
-    --initialize log
-    --(log_filename, show_date, show_debug, show_info)
-%ifeq USE_LOG TRUE
-    usrdis__constructor(LOG_NAME, TRUE, FALSE, TRUE)
-%else
-    --print to display
-    usrdis__constructor('', TRUE, FALSE, TRUE)
-%endif
-
-    usrdis__print(INFO, this.tag + ' Started...')
+    new_util_(this, TAG_CLIENT, client_no, port, ip_address)
   END socket__new_client
 
 ROUTINE socket__delete_client

@@ -10,16 +10,18 @@ declare_function(prog_name,check_tag,prog_name_alias,chktag)
 ROUTINE socket__check_tag(this : T_SOCKET) FROM socket
 declare_function(prog_name,start,prog_name_alias,start)
 ROUTINE socket__start(this : T_SOCKET; fl : FILE) FROM socket
+declare_function(prog_name,stop,prog_name_alias,stop)
+ROUTINE socket__stop(this : T_SOCKET; fl : FILE) FROM socket
 
 --server routines
 declare_function(prog_name,new_server,prog_name_alias,new_svr)
-ROUTINE socket__new_server(this : T_SOCKET; port : INTEGER; server_no : INTEGER) FROM socket
+ROUTINE socket__new_server(this : T_SOCKET; server_no : INTEGER; port : INTEGER; ip_address : STRING) FROM socket
 declare_function(prog_name,delete_server,prog_name_alias,del_svr)
 ROUTINE socket__delete_server(this : T_SOCKET) FROM socket
 
 --client routines
 declare_function(prog_name,new_client,prog_name_alias,newClnt)
-ROUTINE socket__new_client(this : T_SOCKET; port : INTEGER; client_no : INTEGER; ip : STRING) FROM socket
+ROUTINE socket__new_client(this : T_SOCKET; client_no : INTEGER; port : INTEGER; ip_address : STRING) FROM socket
 declare_function(prog_name,delete_client,prog_name_alias,delClnt)
 ROUTINE socket__delete_client(this : T_SOCKET) FROM socket
 
