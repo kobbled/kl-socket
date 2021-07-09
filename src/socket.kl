@@ -11,7 +11,8 @@ PROGRAM socket
 
 --log name for socket messages
 %define USE_LOG TRUE
-%define LOG_NAME 'RD:socket_msg.DT'
+--define LOG_NAME 'RD:socket_msg.DT'
+%define LOG_NAME ''
 
 %include errors.klh
 
