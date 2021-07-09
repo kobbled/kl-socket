@@ -1,0 +1,12 @@
+
+TYPE
+  T_SEND = STRUCTURE
+    command : INTEGER
+    pos : XYZWPR
+    typ : INTEGER
+  ENDSTRUCTURE
+
+  T_RECIEVE = STRUCTURE
+    pos : XYZWPR
+    typ : INTEGER
+  ENDSTRUCTURE
