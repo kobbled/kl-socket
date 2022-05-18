@@ -147,10 +147,10 @@ ROUTINE new_util_(this : T_SOCKET; typ : INTEGER; no : INTEGER;  port : INTEGER;
     --initialize log
     --(log_filename, show_date, show_debug, show_info)
 %ifeq USE_LOG TRUE
-    usrdis__constructor(LOG_NAME, TRUE, FALSE, TRUE)
+    usrdis__new(LOG_NAME, TRUE, FALSE, TRUE)
 %else
     --print to display
-    usrdis__constructor('', TRUE, FALSE, TRUE)
+    usrdis__new('', TRUE, FALSE, TRUE)
 %endif
 
     usrdis__print(INFO, this.tag + ' Started...')
@@ -168,7 +168,7 @@ ROUTINE delete_util_(this : T_SOCKET)
 
     --write to log
     usrdis__write_pipe
-    usrdis__destructor
+    usrdis__delete
   END delete_util_
 
 
