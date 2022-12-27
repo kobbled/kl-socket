@@ -11,12 +11,13 @@
   "includes" : [
     "include"
   ],
+  "tests" : [
+    "test/echo-test/echo_server.kl"
+  ],
   "depends" : [
     "ktransw-macros",
     "display",
     "files",
     "errors"
-  ],
-  "external_paths" : [
   ]
 }

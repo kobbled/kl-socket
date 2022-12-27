@@ -1,0 +1,48 @@
+PROGRAM echo_server
+%NOBUSYLAMP
+%COMMENT = ''
+%NOLOCKGROUP
+%NOPAUSE = ERROR+COMMAND+TPENABLE
+%NOABORT = ERROR
+%NOPAUSESHFT
+
+%include errors.klt
+%include socket.klt
+
+--controller specific variables
+CONST
+  client_tag = 1
+  server_tag = 3
+  port_no = 65432
+VAR
+  socket : T_SOCKET
+  ComFile : FILE
+  recv_str : ARRAY[10] OF STRING[64]
+  force_abort : BOOLEAN
+
+%include errors.klh
+%include socket.klh
+
+BEGIN
+  socket__new_server(socket, server_tag, port_no, '')
+  force_abort=FALSE
+
+  socket__start(socket, ComFile)
+
+  --comm loop
+  WHILE (force_abort=FALSE) AND (socket.status=0) DO
+    --if F1 is pressed abort
+    IF TPIN[129] THEN
+      force_abort = TRUE
+    ENDIF
+
+    socket__read_into_string_buffer(socket, ComFile, recv_str, 1)
+    socket__write_into_string_buffer(socket, ComFile, 'echo_server', 'recv_str', recv_str)
+
+    DELAY 500
+
+  ENDWHILE
+
+  socket__stop(socket, ComFile)
+
+END echo_server
