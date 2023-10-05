@@ -16,7 +16,7 @@ TYPE
     connected  :  BOOLEAN
     status     :  INTEGER
     port       :  INTEGER
-    ip         :  STRING[13]
+    ip         :  STRING[15]
     number     :  INTEGER
     tag        :  STRING[3]
     env        :  STRING[13]
